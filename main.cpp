@@ -5,37 +5,29 @@
 #include<math.h>
 std::vector<std::vector<int>> RCAG(int, int, std::vector<std::vector<int>>);
 void printVector(std::vector<int>);
+std::vector<int> RatioCalculator(int);
 int main() {
-    std::ifstream is("C:\\Users\\Nick\\Desktop\\plain.txt");
-    char x;
-    std::vector<char> textVector;
-    while(is.get(x))
+    std::ifstream is("C:\\Users\\Nick\\Desktop\\plain.txt"); //Reads file from my desktop MUST BE SET SO PATH MATCHES WHERE THE PLAINTEXT IS
+    char x; //Placeholder character to read from the file one char at a time
+    std::vector<char> textVector; //Initialization of vector which will hold the plaintext
+    while(is.get(x)) //Puts the plaintext into a vector of characters
     {
-        textVector.push_back(x);
+        textVector.push_back(x); //Inserts character into vector
     }
-    for(int i = 0; i < textVector.size(); i++) //Prints texts Vector
+    for(int i = 0; i < textVector.size(); i++) //Prints texts Vector for testing
     {
         std::cout << textVector.at(i) << " ";
     }
+    std::cout << textVector.size() <<std::endl; //Prints vector size for testing
     int keyLength;
-    std::cout << "Enter Keylength:"<<std::endl;
-    std::cin >> keyLength;
-    int txtSize = textVector.size();
-    int choose = txtSize % keyLength; //num of long columns
-    std::cout<<choose<<std::endl;
-    int shortColSize = floor(txtSize / keyLength);
-    std::vector<std::vector<int>> comboHolder;
-    comboHolder = RCAG(keyLength, choose, comboHolder);
-    /*for(int i = 0; i < comboHolder.size(); i++) //USED FOR TESTING RCAG
-    {
-        printVector(comboHolder.at(i));
-    }*/
-    //std::cout<<"Size: "<<comboHolder.size()<<std::endl; //USED FOR TESTING RCAG
-    /*std::vector<int> shortcolVec;
-    for(int i = 0; i < keyLength; i++) //Make vector of size keyLength full of the short column size value
-    {
-        shortcolVec.at(i) = shortColSize;
-    }*/
+    std::cout << "Enter Keylength:"<<std::endl; //Asking the user to enter the keylength
+    std::cin >> keyLength; //Taking input
+    int txtSize = textVector.size(); //txtSize = the size of the vector = num of letters in plaintext
+    int numLongCols = txtSize % keyLength; //num of long columns = the remainder of the division of txtsize by keylength
+    std::cout<<numLongCols<<std::endl; //print num of long cols for testing
+    int shortColSize = floor(txtSize / keyLength); //length of short column = txtsize/keylength truncated
+    std::vector<std::vector<int>> comboHolder; //Creates a vector which holds vectors holding integers (Essentially a 2D array)
+    comboHolder = RCAG(keyLength, numLongCols, comboHolder);
     std::vector<std::vector<int>> possibleColArrangements;
     for(int i = 0; i < comboHolder.size(); i++) //Create all possible Column Arrangements
     {
@@ -43,51 +35,56 @@ int main() {
         for(int j = 0; j < keyLength; j++)
         {
             posColArr.push_back(comboHolder.at(i).at(j) + shortColSize);
+
         }
+
         possibleColArrangements.push_back(posColArr);
     }
-    /*for(int i = 0; i<possibleColArrangements.size(); i++) //FOR TESTING POSSIBLECOLARRANGEMENTS
-    {
-        printVector(possibleColArrangements.at(i));
-    }*/
     std::vector<std::vector<std::vector<char>>> possibleTableArrangements;
+    int ColsWithCorrectVowelNum = 0;
     for(int i = 0; i<possibleColArrangements.size(); i++) //Create all possible Table Arrangements
     {
         std::vector<std::vector<char>> posTable;
         std::cout << "{"<< std::endl;
         for(int k = 0; k < shortColSize;k++) //Create all short cols
         {
-            //std::cout<<k<<std::endl;
             std::vector<char> shortRow;
             int placeInTxt = 0;
-            //shortRow.push_back(textVector.at(k)); //First letter in row has value equal to k
-            //std::cout<<textVector.at(k)<<' ';
+            int numOfVowel = 0;
             for(int j = 0; j<keyLength; j++) //Create Row
             {
-
-                //std::cout<<"Making short row"<<std::endl;
                 shortRow.push_back(textVector.at(placeInTxt+k));
+                if(textVector.at(placeInTxt+k) == 'A' ||textVector.at(placeInTxt+k) == 'E' ||textVector.at(placeInTxt+k) == 'I' ||textVector.at(placeInTxt+k) == 'O' ||textVector.at(placeInTxt+k) == 'U')
+                {
+                    numOfVowel++;
+                }
                 std::cout<<(textVector.at(placeInTxt+k))<<' ';
                 placeInTxt+=possibleColArrangements.at(i).at(j);
-
-
             }
-            posTable.push_back(shortRow);
+            std::vector<int> convertedRatio = RatioCalculator(keyLength); //gets the number of vowels that should be in the average english text of length keyLength
+            if(convertedRatio.size() == 1) //True if keyLength * .4 and keyLength *.36 both rounded are the same, meaning there is only one accepted value for the number of vowels in a row
+            {
+                if(numOfVowel == convertedRatio.at(0))
+                {
+                    ColsWithCorrectVowelNum++;
+                    std::cout<<"ColsWithCorr... iterated";
+                }
+            }
+            else if(convertedRatio.size() == 2) //True if there are two accepted values for the number of vowels in a row
+            {
+                if(numOfVowel == convertedRatio.at(0) || numOfVowel == convertedRatio.at(1))
+                {
+                    ColsWithCorrectVowelNum++;
+                    std::cout<<"ColsWithCorr... iterated";
+                }
+            }
+            posTable.push_back(shortRow); // add the row to the table
             std::cout<<std::endl;
         }
         int b = shortColSize+1;
         std::vector<char> finRow;
         int placeInTxt = 0;
-        char e = 'E';
-        /*if(possibleColArrangements.at(i).at(0) == b)
-        {
-            std::cout<<textVector.at(b-1)<<' ';
-        }
-        else
-        {
-            std::cout<<e<<' ';
-        }*/
-
+        char e = '%'; //NULL CHARACTER
         for(int c = 0; c<keyLength; c++)
         {
             if (possibleColArrangements.at(i).at(c) == b) {
@@ -99,7 +96,6 @@ int main() {
             }
             else
             {
-                //finRow.push_back(e);
                 std::cout<<e<<' ';
                 placeInTxt+=b-1;
             }
@@ -108,30 +104,27 @@ int main() {
         posTable.push_back(finRow);
         possibleTableArrangements.push_back(posTable);
     }
-    /*for(int i = 0; i<possibleTableArrangements.size(); i++)
-    {
-        for(int j = 0; j < keyLength; j++)
-        {
-            for(int k = 0; k<)
-        }
-    }*/
+    std::cout<<comboHolder.size()<<std::endl;
+    std::cout<<"Number of Columns with the correct vowel count = "<<ColsWithCorrectVowelNum<<std::endl<<"Number of Cols with correct vowel count / Col count = "<<ColsWithCorrectVowelNum/(comboHolder.size()*floor(textVector.size()/float(keyLength)))<<std::endl;
     std::cout<<possibleTableArrangements.size();
     return 0;
 }
-std::vector<std::vector<int>> RCAG(int keyLength, int choose, std::vector<std::vector<int>> comboHolder)
+std::vector<std::vector<int>> RCAG(int keyLength, int numLongCols, std::vector<std::vector<int>> comboHolder)
 {
-    if (choose == 0)
+    if (numLongCols == 0)
     {
-        //Remainder is 0, means all columns are the same height so only one choice
+        //Remainder is 0, means all columns are the same height so only one choice. In this case there is no point in using this software because the solution could be figured out trivially
     }
-    else if (choose == 1)
+    else if (numLongCols == 1) //If there is one long column, which models a key length choose 1 combination
     {
-        std::vector<std::vector<int>> oneVectors;
-        for(int i = 0; i<keyLength; i++)
+        std::vector<std::vector<int>> oneVectors; //Create a 2D vector
+        for(int i = 0; i<keyLength; i++) //Iterate keyLength times
         {
-            std::vector<int> combo;
-            for(int j = 0; j < keyLength; j++)
+            std::vector<int> combo; //Initialize integer vector
+            for(int j = 0; j < keyLength; j++) //Iterate keyLength times
             {
+                //if both iterators hold the same integer put a 1 in instead of a 0, this 1 represents the long column, since this is a choose 1 combination everything else will be a zero
+                //Creates a 2d vector where every row has a 1 in the next column starting from the first ex. { {100}, {010}, {001} }
                 if (j == i)
                 {
                     combo.push_back(1);
@@ -141,21 +134,19 @@ std::vector<std::vector<int>> RCAG(int keyLength, int choose, std::vector<std::v
                     combo.push_back(0);
                 }
             }
-            oneVectors.push_back(combo);
+            oneVectors.push_back(combo); //put the integer vector into the 2d vector
         }
         return oneVectors;
     }
-    else
+    else //If there is more than one long column, which models a key length choose n combination
     {
-        std::vector<std::vector<int>> holder;
-        std::vector<std::vector<int>> R;
-        R = RCAG(keyLength-1, choose-1, comboHolder);
-        //std::cout<< "R.size = "<< R.size()<<std::endl; USED FOR TESTING RCAG
-        for(int x = 0; x<keyLength; x++)
+        std::vector<std::vector<int>> holder; //Create a 2D vector
+        std::vector<std::vector<int>> R;  //Create another 2D vector
+        R = RCAG(keyLength-1, numLongCols - 1, comboHolder);  //R gets set to the solution of this function with a key length with one less size and 1 less long column
+        for(int x = 0; x<keyLength; x++) //Iterate key length times
         {
             for(int a = 0; a < R.size(); a++)
             {
-                //std::cout<<"Going"<<std::endl;
                 std::vector<int> RatA = R.at(a);
                 std::vector<int> extendedVector;
                 int y = 0;
@@ -197,4 +188,21 @@ void printVector(std::vector<int> vector) { //PRINTS VECTOR
         else {std::cout << ", ";};
     }
     std::cout << "} ";
+}
+std::vector<int> RatioCalculator(int keylength)
+{
+    float a = keylength*.4;
+    float b = keylength*.36;
+    a = round(a); b = round(b);
+    std::vector<int> output;
+    if (a == b)
+    {
+        output.push_back(a);
+    }
+    else
+    {
+        output.push_back(b);
+        output.push_back(a);
+    }
+    return output;
 }
